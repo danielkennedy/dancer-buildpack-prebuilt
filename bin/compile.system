@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# usage: bin/compile <build-dir> <cache-dir>
+
+# Fail fast, fail hard
+set -eo pipefail
+
+# Directories
+BUILD_DIR=$1
+CACHE_DIR=$2
+mkdir -p "$BUILD_DIR" "$CACHE_DIR"
+
+# Files
+which curl || apt-get install curl
+which perl || apt-get install perl
+
+export PERL5LIB="$BUILD_DIR/local/lib/perl5"
+export PERL_CPANM_OPT="--quiet --notest -l $BUILD_DIR/local"
+
+# Is dancer available?
+perl -MDancer -e 1 || curl -sL http://cpanmin.us | perl - Dancer
+
+# Is yaml available?
+perl -MYAML -e 1 || curl -sL http://cpanmin.us | perl - YAML
+
+if [ -d $BUILD_DIR/local ]
+then
+  rm -rf $CACHE_DIR/local
+  mkdir -p $CACHE_DIR
+  cp -a $BUILD_DIR/local $CACHE_DIR/local
+fi
+
+echo "SYSTEM"

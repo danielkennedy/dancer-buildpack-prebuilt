@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# bin/detect <build-dir>
+set -e
+
+if [ -e "$1/config.yml" -a -d "$1/bin" -a -e "$1/bin/app.pl" ]
+then
+  echo Dancer
+else 
+  echo no
+  exit 1
+fi
+
+exit 0
+
+#    - detect
+#      - look for dirs (bin, environments, lib, public, t, views)
+#      - look for files (config.yml, bin/app.pl, environments/*.yml, MANIFEST, MANIFEST.SKIP)
+#    - compile
+#      - get perl
+#      - get dancer
+#      - get YAML
+#    - release

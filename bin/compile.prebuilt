@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# usage: bin/compile <build-dir> <cache-dir>
+
+# Fail fast, fail hard
+set -eo pipefail
+
+# Directories
+BUILD_DIR=$1
+CACHE_DIR=$2
+mkdir -p "$BUILD_DIR" "$CACHE_DIR"
+
+# Files
+which curl || apt-get install curl
+
+export PERL5LIB="$BUILD_DIR/local/lib/perl5"
+export PERL_CPANM_OPT="--quiet --notest -l $BUILD_DIR/local"
+
+TARBALL=$CACHE_DIR/perl-5.20.0.selfcontained.tar.gz
+DOWNLOAD=https://s3.amazonaws.com/af-uploads/buildpacks/perl-5.20.0.selfcontained.tar.gz
+PERL=$BUILD_DIR/local/bin/perl
+
+echo "BUILD_DIR $BUILD_DIR"
+echo "CACHE_DIR $CACHE_DIR"
+
+# Download the tarball to CACHE_DIR
+if [ ! -e $TARBALL ]
+then
+  which curl || apt-get install curl
+  cd $CACHE_DIR && curl -sO $DOWNLOAD
+fi
+
+# Explode the tarball to BUILD_DIR
+if [ ! -x $PERL ]
+then
+  which tar || apt-get install tar
+  mkdir -p $BUILD_DIR/local
+  tar -xvzf $TARBALL -C $BUILD_DIR/local
+fi
+
+echo "PREBUILT"
