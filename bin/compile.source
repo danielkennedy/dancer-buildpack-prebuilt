@@ -45,4 +45,4 @@ perl -MDancer -e 1 2> /dev/null || echo "------> Installing Dancer..." && curl -
 # Do we have the YAML module?
 perl -MYAML -e 1 2> /dev/null || echo "------> Installing YAML..." && curl -sL http://cpanmin.us | perl - -L $BUILD_DIR/local YAML
 
-echo "Complete"
+echo "Complete."

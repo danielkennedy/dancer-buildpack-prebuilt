@@ -9,24 +9,20 @@ BUILD_DIR=$1
 CACHE_DIR=$2
 mkdir -p "$BUILD_DIR" "$CACHE_DIR"
 
-# Files
-which curl || apt-get install curl
-which perl || apt-get install perl
-
+# Environment
 export PERL5LIB="$BUILD_DIR/local/lib/perl5"
 export PERL_CPANM_OPT="--quiet --notest -l $BUILD_DIR/local"
 
+echo "------> Installing curl..."
+which curl || apt-get install curl
+
+echo "------> Installing perl..."
+which perl || apt-get install perl
+
 # Is dancer available?
-perl -MDancer -e 1 || curl -sL http://cpanmin.us | perl - Dancer
+perl -MDancer -e 1 2> /dev/null || echo "------> Installing Dancer..." && curl -sL http://cpanmin.us | perl - -L $BUILD_DIR/local Dancer
 
 # Is yaml available?
-perl -MYAML -e 1 || curl -sL http://cpanmin.us | perl - YAML
+perl -MYAML -e 1 2> /dev/null || echo "------> Installing YAML..." && curl -sL http://cpanmin.us | perl - -L $BUILD_DIR/local YAML
 
-if [ -d $BUILD_DIR/local ]
-then
-  rm -rf $CACHE_DIR/local
-  mkdir -p $CACHE_DIR
-  cp -a $BUILD_DIR/local $CACHE_DIR/local
-fi
-
-echo "SYSTEM"
+echo "Complete."
