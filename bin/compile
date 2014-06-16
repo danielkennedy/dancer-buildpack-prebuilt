@@ -9,20 +9,40 @@ BUILD_DIR=$1
 CACHE_DIR=$2
 mkdir -p "$BUILD_DIR" "$CACHE_DIR"
 
+# Files
+DOWNLOAD=http://www.cpan.org/src/5.0/perl-5.20.0.tar.gz
+
 # Environment
 export PERL5LIB="$BUILD_DIR/local/lib/perl5"
 export PERL_CPANM_OPT="--quiet --notest -l $BUILD_DIR/local"
 
-echo "------> Installing curl..."
+# Do we have curl?
+echo "-----> Installing curl... "
 which curl || apt-get install curl
 
-echo "------> Installing perl..."
-which perl || apt-get install perl
+# Do we have a downloaded source tarball?
+if [ ! -e $CACHE_DIR/perl-5.20.0.tar.gz ]
+then
+  echo "-----> Downloading perl source... "
+  cd $CACHE_DIR
+  curl -sO $DOWNLOAD
+  tar -xvzf perl-5.20.0.tar.gz
+fi
 
-# Is dancer available?
+# Do we have a compiled version of perl?
+# FIXME: Better use of caching!
+if [ ! -e $BUILD_DIR/local/bin/perl ]
+then
+  echo "------> Compiling perl source... "
+  cd $CACHE_DIR/perl-5.20.0
+  ./Configure -des -Dprefix=$BUILD_DIR/local
+  make install
+fi
+
+# Do we have the Dancer module?
 perl -MDancer -e 1 2> /dev/null || echo "------> Installing Dancer..." && curl -sL http://cpanmin.us | perl - -L $BUILD_DIR/local Dancer
 
-# Is yaml available?
+# Do we have the YAML module?
 perl -MYAML -e 1 2> /dev/null || echo "------> Installing YAML..." && curl -sL http://cpanmin.us | perl - -L $BUILD_DIR/local YAML
 
 echo "Complete."
