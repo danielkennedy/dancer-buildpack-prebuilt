@@ -9,6 +9,11 @@ BUILD_DIR=$1
 CACHE_DIR=$2
 mkdir -p "$BUILD_DIR" "$CACHE_DIR"
 
+# Files
+TARBALL=$CACHE_DIR/perl-5.20.0.selfcontained.tar.gz
+DOWNLOAD=https://s3.amazonaws.com/af-uploads/buildpacks/perl-5.20.0.selfcontained.tar.gz
+PERL=$BUILD_DIR/local/bin/perl
+
 # Environment
 export PERL5LIB="$BUILD_DIR/local/lib/perl5"
 export PERL_CPANM_OPT="--quiet --notest -l $BUILD_DIR/local"
@@ -16,13 +21,22 @@ export PERL_CPANM_OPT="--quiet --notest -l $BUILD_DIR/local"
 echo "------> Installing curl..."
 which curl || apt-get install curl
 
-echo "------> Installing perl..."
-which perl || apt-get install perl
+echo "------> Installing tar..."
+which tar || apt-get install tar
 
-# Is dancer available?
-perl -MDancer -e 1 2> /dev/null || echo "------> Installing Dancer..." && curl -sL http://cpanmin.us | perl - -L $BUILD_DIR/local Dancer
+# Download the tarball to CACHE_DIR
+if [ ! -e $TARBALL ]
+then
+  echo "------> Downloading perl binary..."
+  cd $CACHE_DIR && curl -sO $DOWNLOAD
+fi
 
-# Is yaml available?
-perl -MYAML -e 1 2> /dev/null || echo "------> Installing YAML..." && curl -sL http://cpanmin.us | perl - -L $BUILD_DIR/local YAML
+# Explode the tarball to BUILD_DIR
+if [ ! -x $PERL ]
+then
+  mkdir -p $BUILD_DIR/local
+  echo "------> Installing perl binary..."
+  tar -xvzf $TARBALL -C $BUILD_DIR/local
+fi
 
 echo "Complete."
